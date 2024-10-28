@@ -30,7 +30,7 @@ def FishingChatBotTelegram(req: func.HttpRequest) -> func.HttpResponse:
 
     # Get the incoming update from Telegram
     update = req.get_json()
-    logging.info(f"Update received: {update}")  # Log the entire update for debugging
+    logging.info(f"Update received: {update}")  # Log the entire update
 
     # Check if there is a message
     if 'message' in update:
@@ -45,10 +45,12 @@ def FishingChatBotTelegram(req: func.HttpRequest) -> func.HttpResponse:
 
         # Send a response back to the user
         send_telegram_message(chat_id, response_message)
+        logging.info(f"Sent response: {response_message}")
     else:
         logging.warning("No message found in the update.")
 
     return func.HttpResponse("OK", status_code=200)
+
 
 
 def send_telegram_message(chat_id, text):

@@ -29,12 +29,8 @@ except Exception as e:
     raise
 
 def handle_message(user_message):
-    """Process the user message and return a simple response for testing."""
+    """Process the user message and return a response."""
     logger.info(f"Processing message: {user_message}")
-
-    # Return a static response for testing
-    return "Hello, this is a test response!"
-
 
     # Try to get an answer from CQA first
     cqa_answer = query_cqa(user_message)
@@ -44,7 +40,10 @@ def handle_message(user_message):
         return cqa_answer
     else:
         logger.info("No answer found in Custom Question Answering, falling back to OpenAI")
-        return query_openai(user_message)
+        openai_response = query_openai(user_message)
+        logger.info(f"OpenAI response: {openai_response}")
+        return openai_response
+
 
 def query_cqa(question: str) -> str:
     """Query the Custom Question Answering service."""
