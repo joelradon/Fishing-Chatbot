@@ -24,20 +24,14 @@ except Exception as e:
     logging.error(f"Error retrieving secrets from Key Vault: {e}")
     raise
 
-
-# Set up logging
-logging.basicConfig(level=logging.INFO)
-
 @app.route(route="FishingChatBotTelegram")
 def FishingChatBotTelegram(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Received a request from Telegram.')
 
-    # Log the entire request body
     try:
         request_body = req.get_body().decode('utf-8')
-        logging.info(f"Request body: {request_body}")  # Log the entire request body
-        
-        # Check if we have a valid JSON body
+        logging.info(f"Request body: {request_body}")
+
         update = req.get_json()
         logging.info(f"Parsed update: {update}")
 
@@ -47,13 +41,16 @@ def FishingChatBotTelegram(req: func.HttpRequest) -> func.HttpResponse:
             user_message = message.get('text', '')
             logging.info(f"User message: {user_message}")
 
-            # Static response for testing
-            response_message = "Hello! This is a test response."
+            # Process the user message
+            response_message = handle_message(user_message)
+
+            # Send the response back to Telegram
             send_telegram_message(chat_id, response_message)
             logging.info(f"Sent response: {response_message}")
         else:
             logging.warning("No message found in the update.")
-        
+            return func.HttpResponse("No message found.", status_code=400)
+
     except Exception as e:
         logging.error(f"Error processing request: {e}")
         return func.HttpResponse("Error processing request.", status_code=400)
@@ -61,11 +58,11 @@ def FishingChatBotTelegram(req: func.HttpRequest) -> func.HttpResponse:
     return func.HttpResponse("Webhook received successfully!", status_code=200)
 
 def send_telegram_message(chat_id, text):
+    """Send a message back to the user on Telegram."""
     url = f"https://api.telegram.org/bot{TELEGRAM_API_TOKEN}/sendMessage"
     data = {
         'chat_id': chat_id,
         'text': text
     }
     response = requests.post(url, json=data)
-    logging.info(f"Send message response: {response.json()}")  # Log the response from Telegram
-
+    logging.info(f"Sent message to Telegram: {response.text}")
