@@ -19,7 +19,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Use environment variables for Key Vault access
-KEY_VAULT_NAME = os.environ.get("KEY_VAULT_NAME", "FishingBot")  # Default value can be changed if needed
+KEY_VAULT_NAME = os.environ.get("KEY_VAULT_NAME", "FishingBot")
 credential = DefaultAzureCredential()
 vault_url = f"https://{KEY_VAULT_NAME}.vault.azure.net"
 client = SecretClient(vault_url=vault_url, credential=credential)
@@ -131,17 +131,14 @@ def update_cqa_knowledgebase(qna_pairs: list) -> str:
         logger.error(f"Error updating Custom Question Answering knowledgebase: {e}")
         return f"Error updating knowledgebase: {e}"
 
-# Main function to set up the bot
-async def main() -> None:
-    # Create the application with the API token
-    application = ApplicationBuilder().token(TELEGRAM_API_TOKEN).build()
-
-    # Add command and message handlers
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-
-    # Run the bot until manually stopped
-    await application.run_polling()
+# Function to process incoming requests from Telegram
+async def main(req):
+    update = req.get_json()
+    
+    if 'message' in update:
+        await handle_message(Update.de_json(update['message'], None), None)
+    
+    return "OK"
 
 if __name__ == '__main__':
     try:
