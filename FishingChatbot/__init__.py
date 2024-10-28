@@ -53,6 +53,7 @@ def FishingChatBotTelegram(req: func.HttpRequest) -> func.HttpResponse:
 
 
 
+
 def send_telegram_message(chat_id, text):
     # Send a message back to the user on Telegram
     url = f"https://api.telegram.org/bot{TELEGRAM_API_TOKEN}/sendMessage"

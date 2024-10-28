@@ -29,21 +29,9 @@ except Exception as e:
     raise
 
 def handle_message(user_message):
-    """Process the user message and return a response."""
+    """Process the user message and return a simple response for testing."""
     logger.info(f"Processing message: {user_message}")
-
-    # Try to get an answer from CQA first
-    cqa_answer = query_cqa(user_message)
-
-    if cqa_answer:
-        logger.info("Answer found using Custom Question Answering")
-        return cqa_answer
-    else:
-        logger.info("No answer found in Custom Question Answering, falling back to OpenAI")
-        openai_response = query_openai(user_message)
-        logger.info(f"OpenAI response: {openai_response}")
-        return openai_response
-
+    return "Hello! This is a test response."
 
 def query_cqa(question: str) -> str:
     """Query the Custom Question Answering service."""
