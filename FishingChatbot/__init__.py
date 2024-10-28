@@ -4,7 +4,7 @@ import os
 import requests
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
-from Bot.bot import handle_message  # Import your message handling function
+from Bot.bot import handle_message  # Import your existing message handling logic
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
@@ -29,6 +29,7 @@ def FishingChatBotTelegram(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Received a request from Telegram.')
 
     try:
+        # Log the entire request body for debugging
         request_body = req.get_body().decode('utf-8')
         logging.info(f"Request body: {request_body}")
 
@@ -58,7 +59,6 @@ def FishingChatBotTelegram(req: func.HttpRequest) -> func.HttpResponse:
     return func.HttpResponse("Webhook received successfully!", status_code=200)
 
 def send_telegram_message(chat_id, text):
-    """Send a message back to the user on Telegram."""
     url = f"https://api.telegram.org/bot{TELEGRAM_API_TOKEN}/sendMessage"
     data = {
         'chat_id': chat_id,

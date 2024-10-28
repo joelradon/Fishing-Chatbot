@@ -19,65 +19,14 @@ client = SecretClient(vault_url=vault_url, credential=credential)
 
 # Retrieve secrets from Key Vault
 try:
-    TELEGRAM_API_TOKEN = client.get_secret("TELEGRAM-API-TOKEN").value
-    CQA_ENDPOINT = client.get_secret("CQA-ENDPOINT").value
     CQA_API_KEY = client.get_secret("CQA-API-KEY").value
-    OPENAI_ENDPOINT = client.get_secret("OPENAI-ENDPOINT").value
     OPENAI_API_KEY = client.get_secret("OPENAI-API-KEY").value
+    # Add more secrets if needed
 except Exception as e:
     logger.error(f"Error retrieving secrets from Key Vault: {e}")
     raise
 
 def handle_message(user_message):
-    """Process the user message and return a simple response for testing."""
+    """Process the user message and return a simple response."""
     logger.info(f"Processing message: {user_message}")
-    # Return a static response for now to ensure the bot is working
     return "Hello! This is a test response."
-
-def query_cqa(question: str) -> str:
-    """Query the Custom Question Answering service."""
-    headers = {
-        'Ocp-Apim-Subscription-Key': CQA_API_KEY,
-        'Content-Type': 'application/json'
-    }
-    data = {
-        "question": question
-    }
-
-    try:
-        response = requests.post(CQA_ENDPOINT, headers=headers, json=data)
-        logger.info(f"CQA API response status: {response.status_code}")
-        response.raise_for_status()
-        answers = response.json().get('answers', [])
-        if answers and answers[0]['confidenceScore'] > 0.8:
-            return answers[0]['answer']
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Error querying CQA: {e}")
-
-    return None
-
-def query_openai(prompt: str) -> str:
-    """Query the OpenAI API."""
-    headers = {
-        'api-key': OPENAI_API_KEY,
-        'Content-Type': 'application/json'
-    }
-    data = {
-        "messages": [{"role": "user", "content": prompt}],
-        "max_tokens": 150,
-        "temperature": 0.7
-    }
-    response = requests.post(
-        f"{OPENAI_ENDPOINT}/openai/deployments/gpt-4o-mini/chat/completions?api-version=2024-08-01-preview",
-        headers=headers,
-        json=data
-    )
-
-    if response.status_code == 200:
-        response_data = response.json()
-        return response_data.get('choices', [{}])[0].get('message', {}).get('content', 'Sorry, I couldn\'t generate a response.')
-    else:
-        logger.error(f"OpenAI API error: {response.status_code} {response.text}")
-        return "Error querying OpenAI API."
-
-# You can remove the CQA update functions for now to simplify the testing
