@@ -29,18 +29,10 @@ except Exception as e:
     raise
 
 def handle_message(user_message):
-    """Process the user message and return a response."""
+    """Process the user message and return a simple response for testing."""
     logger.info(f"Processing message: {user_message}")
-
-    # Try to get an answer from CQA first
-    cqa_answer = query_cqa(user_message)
-
-    if cqa_answer:
-        logger.info("Answer found using Custom Question Answering")
-        return cqa_answer
-    else:
-        logger.info("No answer found in Custom Question Answering, falling back to OpenAI")
-        return query_openai(user_message)
+    # Return a static response for now to ensure the bot is working
+    return "Hello! This is a test response."
 
 def query_cqa(question: str) -> str:
     """Query the Custom Question Answering service."""
@@ -54,13 +46,13 @@ def query_cqa(question: str) -> str:
 
     try:
         response = requests.post(CQA_ENDPOINT, headers=headers, json=data)
-        logger.info(f"Custom Question Answering API response status: {response.status_code}")
+        logger.info(f"CQA API response status: {response.status_code}")
         response.raise_for_status()
         answers = response.json().get('answers', [])
         if answers and answers[0]['confidenceScore'] > 0.8:
             return answers[0]['answer']
     except requests.exceptions.RequestException as e:
-        logger.error(f"Error querying Custom Question Answering: {e}")
+        logger.error(f"Error querying CQA: {e}")
 
     return None
 
@@ -85,24 +77,7 @@ def query_openai(prompt: str) -> str:
         response_data = response.json()
         return response_data.get('choices', [{}])[0].get('message', {}).get('content', 'Sorry, I couldn\'t generate a response.')
     else:
-        return f"Sorry, I am having trouble reaching the AI service. Error code: {response.status_code}"
+        logger.error(f"OpenAI API error: {response.status_code} {response.text}")
+        return "Error querying OpenAI API."
 
-def update_cqa_knowledgebase(qna_pairs: list) -> str:
-    """Function to add new entries to the Custom Question Answering knowledgebase."""
-    headers = {
-        'Ocp-Apim-Subscription-Key': CQA_API_KEY,
-        'Content-Type': 'application/json'
-    }
-    data = {
-        "add": {
-            "qnaPairs": qna_pairs
-        }
-    }
-    try:
-        response = requests.patch(CQA_ENDPOINT, headers=headers, json=data)
-        logger.info(f"CQA API response status: {response.status_code}")
-        response.raise_for_status()
-        return "Knowledgebase updated successfully."
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Error updating Custom Question Answering knowledgebase: {e}")
-        return f"Error updating knowledgebase: {e}"
+# You can remove the CQA update functions for now to simplify the testing
