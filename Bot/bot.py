@@ -1,15 +1,8 @@
 import os
 import requests
-import asyncio
-import nest_asyncio
 import logging
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
-
-# Apply nest_asyncio to handle nested event loops (important for environments where the loop is already running)
-nest_asyncio.apply()
 
 # Set up logging
 logging.basicConfig(
@@ -35,36 +28,22 @@ except Exception as e:
     logger.error(f"Error retrieving secrets from Key Vault: {e}")
     raise
 
-# Start function to greet users
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    logger.info("Received /start command")
-    await update.message.reply_text('Hi! I am your fishing bot. Ask me anything about fishing!')
+def handle_message(user_message):
+    """Process the user message and return a response."""
+    logger.info(f"Processing message: {user_message}")
 
-# Function to handle incoming messages
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    # Check if the bot was mentioned with "@" in a group or if the message is a reply to one of its messages
-    mentioned_in_group = update.message.chat.type in ['group', 'supergroup'] and f"@{context.bot.username}" in update.message.text
-    is_reply = update.message.reply_to_message is not None
+    # Try to get an answer from CQA first
+    cqa_answer = query_cqa(user_message)
 
-    # Allow the bot to respond if it's a direct message or it was mentioned in a group or replied to its own message
-    if update.message.chat.type == 'private' or mentioned_in_group or is_reply:
-        user_question = update.message.text
-        logger.info(f"Received question: {user_question}")
+    if cqa_answer:
+        logger.info("Answer found using Custom Question Answering")
+        return cqa_answer
+    else:
+        logger.info("No answer found in Custom Question Answering, falling back to OpenAI")
+        return query_openai(user_message)
 
-        # Try to get an answer from CQA first
-        cqa_answer = query_cqa(user_question)
-
-        if cqa_answer:
-            logger.info("Answer found using Custom Question Answering")
-            await update.message.reply_text(cqa_answer)
-        else:
-            # If CQA doesn't have an answer, fall back to OpenAI
-            logger.info("No answer found in Custom Question Answering, falling back to OpenAI")
-            openai_answer = query_openai(user_question)
-            await update.message.reply_text(openai_answer)
-
-# Function to query Custom Question Answering
 def query_cqa(question: str) -> str:
+    """Query the Custom Question Answering service."""
     headers = {
         'Ocp-Apim-Subscription-Key': CQA_API_KEY,
         'Content-Type': 'application/json'
@@ -82,13 +61,11 @@ def query_cqa(question: str) -> str:
             return answers[0]['answer']
     except requests.exceptions.RequestException as e:
         logger.error(f"Error querying Custom Question Answering: {e}")
-        if response:
-            logger.error(f"Response content: {response.content}")
 
     return None
 
-# Function to query OpenAI gpt-4o-mini
 def query_openai(prompt: str) -> str:
+    """Query the OpenAI API."""
     headers = {
         'api-key': OPENAI_API_KEY,
         'Content-Type': 'application/json'
@@ -98,7 +75,6 @@ def query_openai(prompt: str) -> str:
         "max_tokens": 150,
         "temperature": 0.7
     }
-    # Use the correct target URI for your OpenAI deployment
     response = requests.post(
         f"{OPENAI_ENDPOINT}/openai/deployments/gpt-4o-mini/chat/completions?api-version=2024-08-01-preview",
         headers=headers,
@@ -130,18 +106,3 @@ def update_cqa_knowledgebase(qna_pairs: list) -> str:
     except requests.exceptions.RequestException as e:
         logger.error(f"Error updating Custom Question Answering knowledgebase: {e}")
         return f"Error updating knowledgebase: {e}"
-
-# Function to process incoming requests from Telegram
-async def main(req):
-    update = req.get_json()
-    
-    if 'message' in update:
-        await handle_message(Update.de_json(update['message'], None), None)
-    
-    return "OK"
-
-if __name__ == '__main__':
-    try:
-        asyncio.run(main())
-    except Exception as e:
-        logger.error(f"Unexpected error: {e}")
