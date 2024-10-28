@@ -1,15 +1,17 @@
 {
     "bindings": [
         {
+            "authLevel": "anonymous",
             "type": "httpTrigger",
             "direction": "in",
-            "authLevel": "anonymous",
+            "name": "req",
             "methods": ["post"],
             "route": "FishingChatBotTelegram"
         },
         {
             "type": "http",
-            "direction": "out"
+            "direction": "out",
+            "name": "$return"
         }
     ]
 }
