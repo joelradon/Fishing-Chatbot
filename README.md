@@ -10,7 +10,7 @@ The bot leverages two main services:
 
 ## Features
 - Integrates with Azure Key Vault to securely manage sensitive tokens and keys.
-- Responds to questions in private or group chats on Telegram.
+- Responds to questions in private or group chats on Telegram when specifically tagged or replied to.
 - Uses Custom Question Answering to provide focused, knowledge-based answers.
 - Uses OpenAI GPT-4 to answer more general questions.
 - Supports updating the CQA knowledge base via new question-answer pairs.
@@ -45,12 +45,12 @@ The bot will run until manually stopped and respond to commands and messages on 
 To use the bot in a group:
 - Add the bot to your Telegram group.
 - Give the bot appropriate permissions to read and send messages.
-- You can interact with the bot by mentioning it (`@YourBotName`) in your messages or simply sending queries in the group.
+- You can interact with the bot by mentioning it (`@YourBotName`) in your messages or replying directly to one of its messages.
 
 ## Querying the Bot
-Once the bot is running, you can interact with it in private or group chats by typing your question. Examples include:
-- "What size rod should I use for euro nymphing?"
-- "What is the best bait for redfish?"
+Once the bot is running, you can interact with it in private or group chats by typing your question and tagging the bot. Examples include:
+- "@YourBotName What size rod should I use for euro nymphing?"
+- "@YourBotName What is the best bait for redfish?"
 
 The bot will first attempt to answer using the CQA service. If it doesn't find a relevant answer, it will fall back to OpenAI's GPT-4 model.
 

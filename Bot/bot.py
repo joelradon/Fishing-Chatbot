@@ -42,20 +42,26 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 # Function to handle incoming messages
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    user_question = update.message.text
-    logger.info(f"Received question: {user_question}")
+    # Check if the bot was mentioned with "@" in a group or if the message is a reply to one of its messages
+    mentioned_in_group = update.message.chat.type in ['group', 'supergroup'] and f"@{context.bot.username}" in update.message.text
+    is_reply = update.message.reply_to_message is not None
 
-    # Try to get an answer from CQA first
-    cqa_answer = query_cqa(user_question)
+    # Allow the bot to respond if it's a direct message or it was mentioned in a group or replied to its own message
+    if update.message.chat.type == 'private' or mentioned_in_group or is_reply:
+        user_question = update.message.text
+        logger.info(f"Received question: {user_question}")
 
-    if cqa_answer:
-        logger.info("Answer found using Custom Question Answering")
-        await update.message.reply_text(cqa_answer)
-    else:
-        # If CQA doesn't have an answer, fall back to OpenAI
-        logger.info("No answer found in Custom Question Answering, falling back to OpenAI")
-        openai_answer = query_openai(user_question)
-        await update.message.reply_text(openai_answer)
+        # Try to get an answer from CQA first
+        cqa_answer = query_cqa(user_question)
+
+        if cqa_answer:
+            logger.info("Answer found using Custom Question Answering")
+            await update.message.reply_text(cqa_answer)
+        else:
+            # If CQA doesn't have an answer, fall back to OpenAI
+            logger.info("No answer found in Custom Question Answering, falling back to OpenAI")
+            openai_answer = query_openai(user_question)
+            await update.message.reply_text(openai_answer)
 
 # Function to query Custom Question Answering
 def query_cqa(question: str) -> str:
