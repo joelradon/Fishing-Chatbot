@@ -28,28 +28,11 @@ except Exception as e:
 def FishingChatBotTelegram(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Received a request from Telegram.')
 
-    # Get the incoming update from Telegram
-    update = req.get_json()
-    logging.info(f"Update received: {update}")  # Log the entire update
-
-    # Check if there is a message
-    if 'message' in update:
-        message = update['message']
-        chat_id = message['chat']['id']
-        user_message = message.get('text', '')
-
-        logging.info(f"Received message: {user_message}")
-
-        # Call the handle_message function from bot.py
-        response_message = handle_message(user_message)
-
-        # Send a response back to the user
-        send_telegram_message(chat_id, response_message)
-        logging.info(f"Sent response: {response_message}")
-    else:
-        logging.warning("No message found in the update.")
-
-    return func.HttpResponse("OK", status_code=200)
+    # Log the entire request
+    logging.info(f"Request body: {req.get_body().decode('utf-8')}")
+    
+    # Return a simple static response
+    return func.HttpResponse("Test response from Azure Function!", status_code=200)
 
 def send_telegram_message(chat_id, text):
     # Send a message back to the user on Telegram
