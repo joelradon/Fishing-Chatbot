@@ -24,15 +24,20 @@ except Exception as e:
     logging.error(f"Error retrieving secrets from Key Vault: {e}")
     raise
 
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+
 @app.route(route="FishingChatBotTelegram")
 def FishingChatBotTelegram(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Received a request from Telegram.')
 
-    # Log the entire request
-    logging.info(f"Request body: {req.get_body().decode('utf-8')}")
-    
-    # Return a simple static response
-    return func.HttpResponse("Test response from Azure Function!", status_code=200)
+    # Log the request body
+    request_body = req.get_body().decode('utf-8')
+    logging.info(f"Request body: {request_body}")  # Log the entire request body
+
+    # Return a custom message for testing
+    return func.HttpResponse("Webhook received successfully!", status_code=200)
 
 def send_telegram_message(chat_id, text):
     # Send a message back to the user on Telegram
