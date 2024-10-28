@@ -29,8 +29,12 @@ except Exception as e:
     raise
 
 def handle_message(user_message):
-    """Process the user message and return a response."""
+    """Process the user message and return a simple response for testing."""
     logger.info(f"Processing message: {user_message}")
+
+    # Return a static response for testing
+    return "Hello, this is a test response!"
+
 
     # Try to get an answer from CQA first
     cqa_answer = query_cqa(user_message)
