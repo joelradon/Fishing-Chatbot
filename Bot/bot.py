@@ -18,8 +18,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Set up Azure Key Vault access
-KEY_VAULT_NAME = "FishingBot"
+# Use environment variables for Key Vault access
+KEY_VAULT_NAME = os.environ.get("KEY_VAULT_NAME", "FishingBot")  # Default value can be changed if needed
 credential = DefaultAzureCredential()
 vault_url = f"https://{KEY_VAULT_NAME}.vault.azure.net"
 client = SecretClient(vault_url=vault_url, credential=credential)
